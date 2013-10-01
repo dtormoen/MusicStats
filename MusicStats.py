@@ -3,7 +3,7 @@
 import plistlib
 import getpass
 
-displayNum = 10
+displayNum = 0
 
 user = getpass.getuser()
 
@@ -16,9 +16,6 @@ def intToTime(time):
 	time = time / 1000
 	seconds = time % 60
 	time = time / 60
-	import getpass
-
-	user = getpass.getuser()
 	minutes = time % 60
 	time = time / 60
 	hours = time % 24
@@ -29,9 +26,6 @@ def intToTime(time):
 # Updates values in the main stats dictionaries with the time and play count of a track
 def updateValue(track, value):
 	if 'Play Count' in track:
-		import getpass
-
-		user = getpass.getuser()
 		value[0] += track['Play Count']
 		if 'Total Time' in track:
 			value[1] += track['Total Time'] * track['Play Count']
