@@ -1,8 +1,13 @@
 #! /usr/bin/python
 
 import plistlib
+import getpass
 
-iTunesLib = plistlib.readPlist('iTunes Music Library.xml')
+displayNum = 10
+
+user = getpass.getuser()
+
+iTunesLib = plistlib.readPlist('/Users/'+ user +'/Music/iTunes/iTunes Music Library.xml')
 tracks = iTunesLib['Tracks']
 
 # Converts iTunes time to a human readable string
@@ -11,6 +16,9 @@ def intToTime(time):
 	time = time / 1000
 	seconds = time % 60
 	time = time / 60
+	import getpass
+
+	user = getpass.getuser()
 	minutes = time % 60
 	time = time / 60
 	hours = time % 24
@@ -21,6 +29,9 @@ def intToTime(time):
 # Updates values in the main stats dictionaries with the time and play count of a track
 def updateValue(track, value):
 	if 'Play Count' in track:
+		import getpass
+
+		user = getpass.getuser()
 		value[0] += track['Play Count']
 		if 'Total Time' in track:
 			value[1] += track['Total Time'] * track['Play Count']
@@ -32,9 +43,6 @@ def displayTable(table):
 	for line in table:
 		print "| " + " | ".join(u"{:{}}".format(x, col_width[i]) for i,x in enumerate(line)) + " |"
 	print "\n"
-
-
-displayNum = 50
 
 artists = dict() # key is Artist, value is [Play Count, Total Time]
 albums = dict() # key is Artist, value is [Play Count, Total Time]
