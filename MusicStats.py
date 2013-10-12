@@ -60,6 +60,7 @@ for trackId, track in tracks.iteritems():
 
 print "Total time:", intToTime(totalTime)
 print "Total number of plays:", totalPlays
+print "Average length of song listened to:", intToTime(totalTime/totalPlays)
 
 print "Top Tracks by time spent listening"
 trackList = sorted(topTracksByTime.iteritems(), key=lambda track: track[1][2], reverse=True)
@@ -95,4 +96,3 @@ displayTable(albumTable)
 #Stats to add:
 #	Play density: number of plays/total time of music. Shows which bands are listened to a lot
 #		despite having a small number of songs
-#	Average song length as a weighted average of plays
