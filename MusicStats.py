@@ -3,7 +3,7 @@
 import plistlib
 import getpass
 
-displayNum = 0
+displayNum = 50
 
 user = getpass.getuser()
 
@@ -40,6 +40,7 @@ def displayTable(table):
 
 artists = dict() # key is Artist, value is [Play Count, Total Time]
 albums = dict() # key is Artist, value is [Play Count, Total Time]
+topTracksByTime = dict() # key is trackId, value is [track, artist, Total Time]
 totalPlays = 0
 totalTime = 0
 for trackId, track in tracks.iteritems():
@@ -47,6 +48,9 @@ for trackId, track in tracks.iteritems():
 		totalPlays += track['Play Count']
 		if 'Total Time' in track:
 			totalTime += track['Total Time'] * track['Play Count']
+			if 'Artist' in track and 'Name' in track:
+				topTracksByTime[trackId] = [track['Name'], 
+					track['Artist'], track['Total Time'] * track['Play Count']]
 		if 'Artist' in track:
 			updateValue(track, artists.setdefault(track['Artist'],[0,0]))
 		if 'Album' in track:
@@ -56,6 +60,12 @@ for trackId, track in tracks.iteritems():
 
 print "Total time:", intToTime(totalTime)
 print "Total number of plays:", totalPlays
+
+print "Top Tracks by time spent listening"
+trackList = sorted(topTracksByTime.iteritems(), key=lambda track: track[1][2], reverse=True)
+trackTable = [[t[1][0], t[1][1], intToTime(t[1][2]), "{0:.2f}".format(((t[1][2]/float(totalTime))*100)) + "%"] 
+	for t in trackList[:displayNum]]
+displayTable(trackTable)
 
 print "Top played artists by play count"
 artistList = sorted(artists.iteritems(), key=lambda artist: artist[1][0], reverse=True)
@@ -85,5 +95,4 @@ displayTable(albumTable)
 #Stats to add:
 #	Play density: number of plays/total time of music. Shows which bands are listened to a lot
 #		despite having a small number of songs
-#	Most listened to song: Show top songs listed by how much time has been spenting listening
 #	Average song length as a weighted average of plays
