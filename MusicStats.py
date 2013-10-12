@@ -24,11 +24,21 @@ def intToTime(time):
 	return '{}:{}:{}:{}.{}'.format(days,hours,minutes,seconds,milli)
 
 # Updates values in the main stats dictionaries with the time and play count of a track
-def updateValue(track, value):
-	if 'Play Count' in track:
+def updateListeningTime(track, value):
+	value[0] += track['Play Count']
+	if 'Total Time' in track:
+		value[1] += track['Total Time'] * track['Play Count']
+
+def updateTrackListeningTime(track,value):
+	if 'Artist' in track and 'Name' in track:
+		value[0] = track['Name']
+		value[1] = track['Artist']
+		value[2] = track['Total Time'] * track['Play Count']
+
+def updateDensity(track, value):
+	if 'Total Time' in track:
 		value[0] += track['Play Count']
-		if 'Total Time' in track:
-			value[1] += track['Total Time'] * track['Play Count']
+		value[1] += track['Total Time']
 
 # Displays a formatted table from a 2D list
 def displayTable(table):
@@ -41,6 +51,7 @@ def displayTable(table):
 artists = dict() # key is Artist, value is [Play Count, Total Time]
 albums = dict() # key is Artist, value is [Play Count, Total Time]
 topTracksByTime = dict() # key is trackId, value is [track, artist, Total Time]
+playDensity = dict() #key is Artist, value is [Play Count, length of music by artist]
 totalPlays = 0
 totalTime = 0
 for trackId, track in tracks.iteritems():
@@ -48,13 +59,12 @@ for trackId, track in tracks.iteritems():
 		totalPlays += track['Play Count']
 		if 'Total Time' in track:
 			totalTime += track['Total Time'] * track['Play Count']
-			if 'Artist' in track and 'Name' in track:
-				topTracksByTime[trackId] = [track['Name'], 
-					track['Artist'], track['Total Time'] * track['Play Count']]
+			updateTrackListeningTime(track, topTracksByTime.setdefault(trackId,['No Track','No Artist',0]))
 		if 'Artist' in track:
-			updateValue(track, artists.setdefault(track['Artist'],[0,0]))
+			updateListeningTime(track, artists.setdefault(track['Artist'],[0,0]))
+			updateDensity(track, playDensity.setdefault(track['Artist'],[0,0]))
 		if 'Album' in track:
-			updateValue(track, albums.setdefault(track['Album'],[0,0]))
+			updateListeningTime(track, albums.setdefault(track['Album'],[0,0]))
 
 # Display all stats
 
@@ -74,6 +84,13 @@ artistTable = [[a[0], a[1][0], "{0:.2f}".format(((a[1][0]/float(totalPlays))*100
 	for a in artistList[:displayNum]]
 displayTable(artistTable)
 
+print "Top played artist by play density (plays per minute)"
+# show bands with greater than 5 min play time to limit weird results
+densityList = [x for x in playDensity.iteritems() if x[1][1] > 5*60000] 
+densityList = sorted(densityList, key=lambda artist: artist[1][0]/float(artist[1][1]), reverse=True)
+densityTable = [[a[0], "{0:.2f}".format(a[1][0]/(float(a[1][1])/60000))] for a in densityList[:displayNum]]
+displayTable(densityTable)
+
 
 print "Top played albums by play count"
 albumList = sorted(albums.iteritems(), key=lambda album: album[1][0], reverse=True)
@@ -92,7 +109,3 @@ albumList = sorted(albums.iteritems(), key=lambda album: album[1][1], reverse=Tr
 albumTable = [[a[0], intToTime(a[1][1]), "{0:.2f}".format(((a[1][1]/float(totalTime))*100)) + "%"] 
 	for a in albumList[:displayNum]]
 displayTable(albumTable)
-
-#Stats to add:
-#	Play density: number of plays/total time of music. Shows which bands are listened to a lot
-#		despite having a small number of songs
